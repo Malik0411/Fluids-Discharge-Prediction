@@ -2,21 +2,24 @@ syms Vout hf f
 
 % Starting level (maximum)
 z = 0;
+tinc = 0.1;
 
 % First pipe
-L = 0.1;
+L = 0.2;
 
 % Known Values
 d = 7.24/1000;
 e = 0.0025/1000;
 g = 9.81;
 u = 0.001002;
+l = 32/100;
+w = 26/100;
 
 % Array of Vout solutions
 A = zeros(1, 80);
 B = zeros(1, 80);
 
-for i = 1:80
+while z >= -0.08
     % Initial guess
     f0 = 1;
     f1 = 0.03;
@@ -37,8 +40,9 @@ for i = 1:80
         f1 = double(solve(eqn, f));
     end
     
-    B(i) = z;
-    z = z - 0.001;
+    z = z - (Uavg*tinc*pi*(d/2)^2)/(l*w);
+    B(i) = t;
+    t = t + 0.1;
     A(i) = Uavg;
 end
 
@@ -47,3 +51,12 @@ plot(B, A, '-r'); % plots acceleration versus time
 title('Output velocity vs. Water Level'); % creates a title for the plot
 ylabel('Output Velocity, Vout [m/s]');
 xlabel('Water Level, z [m]') % labels the x-axis
+
+% Calculating the time per interval
+time = zeros(1,79);
+for i = 1:79
+    time(i) = abs((B(i+1)-B(i))/(A(i+1)-A(i)));
+end
+
+drainTime = sum(time);
+
