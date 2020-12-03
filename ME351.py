@@ -34,19 +34,19 @@ while z >= -0.08:
         f0 = f1
 
         # Solving for hf (no summation needed)
-        hf = (f0*L*Vout^2)/(2*d*g)
+        hf = (f0*L*Vout**2)/(2*d*g)
 
-        eqn = Vout == sym.sqrt(19.6*z+1.96+19.6*L/150-19.6*hf)
-        Uavg = float(sym.solveSet(eqn, Vout))
+        Uavg = sym.solve(sym.Eq(Vout, sym.sqrt(19.6*z+1.96+19.6*L/150-19.6*hf)), Vout)[0]
         Re = (998.19*Uavg*d)/u
 
         # Assuming Turbulent flow
-        eqn = 1/sym.sqrt(f) == -2*sym.log(e/(d*3.7)+2.51/(Re*sym.sqrt(f)))
-        f1 = float(sym.solveSet(eqn, f))
+        f1 = 64/Re
+        # f1 = sym.solve(sym.Eq(1/sym.sqrt(f), -2*sym.log(e/(d*3.7)+2.51/(Re*sym.sqrt(f)))), f)
     
     C.append(z)
-    z = z - (Uavg*tinc*sym.pi*(d/2)^2)/(l*w)
-
+    z = z - (Uavg*tinc*sym.pi*(d/2)**2)/(l*w)
+    print(z)
+    
     B.append(t)
     t = t + tinc
 
@@ -54,10 +54,3 @@ while z >= -0.08:
     i = i + 1
 
 print(len(B)*tinc)
-
-# figure(1); % opens a figure window
-# plot(B, A, '-r'); % plots acceleration versus time
-# title('Output velocity vs. Water Level'); % creates a title for the plot
-# ylabel('Output Velocity, Vout [m/s]');
-# xlabel('Water Level, z [m]') % labels the x-axis
-
