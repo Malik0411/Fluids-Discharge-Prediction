@@ -7,16 +7,16 @@ t = 0;
 tinc = 1;
 
 % First pipe
-L = 0.6;
+L = 0.2;
 
 % Known Values
-d = 7.24/1000;
+d = 7.94/1000;
 e = 0.0025/1000;
 g = 9.81;
 u = 0.001002;
 l = 32/100;
 w = 26/100;
-K = 0.5;
+K = 0.8;
 A1 = l*w;
 A2 = pi*(d/2)^2;
 
@@ -46,16 +46,20 @@ while z >= 0.02
         hm = (K*Vout^2)/(2*g);
 
         % Defining implicit equation for Vout = Uavg
-        eqn = Vout == sqrt(19.62*z+19.62*L/150-19.62*hf-9.81*hm);
+        eqn = Vout == sqrt(19.62*(z+L/150-hf-hm));
         Uavg = double(solve(eqn, Vout));
         Re = 998.19*Uavg*d/u;
 
-        % Assuming Turbulent flow
-        eqn = 1/sqrt(f) == -2*log(e/(d*3.7)+2.51/(Re*sqrt(f)));
-        
-        % % Assuming Laminar flow
-        % eqn = f == 64/Re;
-        
+        % Depending on the type of flow
+        if Re > 4000
+            eqn = 1/sqrt(f) == -2*log(e/(d*3.7)+2.51/(Re*sqrt(f)));
+        elseif Re < 2300
+            eqn = f == 64/Re;
+        else
+            eqn = f == 0.048;
+        end
+            
+        % Calculate the new friction coefficient and repeat
         f1 = double(solve(eqn, f));
     end
     
@@ -75,7 +79,7 @@ while z >= 0.02
     
     % Hf array
     hf_val = (f1*L*Uavg^2)/(2*d*g);
-    Hf(i) = hf_val
+    Hf(i) = hf_val;
     
     % Iterating the index
     i = i + 1;
