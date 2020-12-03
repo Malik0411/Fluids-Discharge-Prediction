@@ -3,7 +3,7 @@ syms Vout hf f
 % Starting level (maximum)
 z = 0;
 t = 0;
-tinc = 0.1;
+tinc = 1;
 
 % First pipe
 L = 0.2;
@@ -17,8 +17,9 @@ l = 32/100;
 w = 26/100;
 
 % Array of Vout solutions
-A = zeros(1, 80);
-B = zeros(1, 80);
+A = zeros(1, 1000);
+B = zeros(1, 1000);
+i = 1;
 
 while z >= -0.08
     % Initial guess
@@ -45,6 +46,7 @@ while z >= -0.08
     B(i) = t;
     t = t + tinc;
     A(i) = Uavg;
+    i = i + 1;
 end
 
 figure(1); % opens a figure window
