@@ -2,6 +2,7 @@ syms Vout hf f
 
 % Starting level (maximum)
 z = 0;
+t = 0;
 tinc = 0.1;
 
 % First pipe
@@ -42,7 +43,7 @@ while z >= -0.08
     
     z = z - (Uavg*tinc*pi*(d/2)^2)/(l*w);
     B(i) = t;
-    t = t + 0.1;
+    t = t + tinc;
     A(i) = Uavg;
 end
 
