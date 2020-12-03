@@ -7,7 +7,7 @@ t = 0;
 tinc = 1;
 
 % First pipe
-L = 0.2;
+L = 0.3;
 
 % Known Values
 d = 7.94/1000;
@@ -51,12 +51,12 @@ while z >= 0.02
         Re = 998.19*Uavg*d/u;
 
         % Depending on the type of flow
-        if Re > 4000
+        if Re >= 4000
             eqn = 1/sqrt(f) == -2*log(e/(d*3.7)+2.51/(Re*sqrt(f)));
         elseif Re < 2300
             eqn = f == 64/Re;
         else
-            eqn = f == 0.048;
+            eqn = f == 0.045;
         end
             
         % Calculate the new friction coefficient and repeat
