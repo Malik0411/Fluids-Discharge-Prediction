@@ -1,12 +1,12 @@
 syms Vout hf f
 
 % Starting level (maximum)
-z = 0;
+z = 0.1;
 t = 0;
 tinc = 1;
 
 % First pipe
-L = 0.2;
+L = 0.4;
 
 % Known Values
 d = 7.24/1000;
@@ -20,12 +20,12 @@ A1 = l*w;
 A2 = pi*(d/2)^2;
 
 % Array of Vout solutions
-A = zeros(1, 2000);
-B = zeros(1, 2000);
-C = zeros(1, 2000);
+A = zeros(1, 500);
+B = zeros(1, 500);
+C = zeros(1, 500);
 i = 1;
 
-while z >= -0.08
+while z >= 0.02
     % Initial guess
     f0 = 1;
     f1 = 0.03;
@@ -38,12 +38,12 @@ while z >= -0.08
         hf = (f0*L*Vout^2)/(2*d*g);
         hm = (K*Vout^2)/(2*g);
 
-        eqn = Vout == sqrt(19.6*z+1.96+19.6*L/150-19.6*hf-19.6*hm);
+        eqn = Vout == sqrt(19.62*z+19.62*L/150-19.62*hf-19.62*hm);
         Uavg = double(solve(eqn, Vout));
         Re = (998.19*Uavg*d)/u;
 
         % Assuming Turbulent flow
-        eqn = 1/sqrt(f) == -2*log(e/(d*3.7)+2.51/(Re*sqrt(f)));
+        eqn = f == 64/Re;
         f1 = double(solve(eqn, f));
     end
     
@@ -62,7 +62,6 @@ end
 
 figure(1); % opens a figure window
 plot(B, A, '-r'); % plots acceleration versus time
-title('Output velocity vs. Water Level'); % creates a title for the plot
+title('Output Velocity vs. Water Level'); % creates a title for the plot
 ylabel('Output Velocity, Vout [m/s]');
 xlabel('Water Level, z [m]') % labels the x-axis
-
