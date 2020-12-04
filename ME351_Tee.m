@@ -30,28 +30,38 @@ Tim = zeros(1, 800); % Time
 Pos = zeros(1, 800); % Position
 Reyp = zeros(1, 800); % Reynold's number pipe
 Reyt = zeros(1, 800); % Reynold's number tee
-Hfp = zeros(1, 800); % hf for pipe
-Hft = zeros(1, 800); % hf for tee
+fp = zeros(1, 800); % Friction coefficient for pipe
+ft = zeros(1, 800); % Friction coefficient for tee
 
 % For iterating through solution arrays
 i = 1;
-Vold = 1;
 
-%% Iterative solution
+% Iterative solution
 while z >= 0
-    % Initial guess
-    Vx0 = 0.5;
-    Vx1 = Vold;
     
-    % Iterating to find Vx
-    while abs(Vx0 - Vx1) > 0.001
-        % Current Vx to previous Vx
-        Vx0 = Vx1;
+    % Initial guess
+    f0_tube = 0.03;
+    f1_tube = 0.05;
+    f0_tee = 0.03;
+    f1_tee = 0.05;
+    
+    % Iterating to find f_tube and f_tee
+    while abs(f0_tube - f1_tube) > 0.001 || abs(f0_tee - f1_tee) > 0.001
+        
+        % Iterating our next friction coefficient
+        f0_tube = f1_tube;
+        f0_tee = f1_tee;
+        
+        % Defining implicit equation for Vx
+        eqn = Vx == sqrt((z+L_tube/150+0.02)/(0.1422377+L_tube*f0_tube/(d_tube*2*g)+f0_tee*L_tee*0.25526276^2/(d_tee*g)));
+        Vx0 = double(solve(eqn, Vx));
+        
+        % compute Vy
         Vy = 0.25526276*Vx0;
         
         % Friction coefficients
         Re_tube = rho*Vx0*d_tube/u;
-        Re_tee = rho*Vx0*d_tee/u;
+        Re_tee = rho*Vy*d_tee/u;
         
         % Depending on the type of flow for tube
         if Re_tube >= 4000
@@ -71,44 +81,32 @@ while z >= 0
             eqn_tee = f == 0.045;
         end
         
-        % Solving for the friction coefficients
-        f_tube = double(solve(eqn_tube, f));
-        f_tee = double(solve(eqn_tee, f));
-        
-        % Friction equations
-        hf_tube = (L_tube*f_tube*Vx0^2)/(d_tube*2*g);
-        hf_tee = (L_tee*f_tee*Vy^2)/(d_tee*g);
-        hm_entrance = K_tube*Vx0^2/(2*g);
-        hm_tee = K_tee*Vy^2/g;
-        
-        % Defining implicit equation for Vx
-        eqn = Vx == sqrt(301.110876*(z+L_tube/150+0.02-hf_tube-hf_tee-hm_entrance-hm_tee));
-        Vx1 = solve(eqn, Vx, 'ReturnConditions', true).Vx;
+        % Solving for the new friction coefficients
+        f1_tube = double(solve(eqn_tube, f));
+        f1_tee = double(solve(eqn_tee, f));
     end
     
     % Position array
     Pos(i) = z;
-    z = z - Vx1*tinc*A2/A1
+    z = z - Vx0*tinc*A2/A1
     
     % Time array
     Tim(i) = t;
     t = t + tinc;
     
     % Velocity array
-    Vold = Vx1;
-    Vel(i) = Vx1;
+    Vel(i) = Vx0;
     
     % Reynold's array
     Reyp(i) = Re_tube;
     Reyt(i) = Re_tee;
     
-    % Hf array
-    Hfp(i) = hf_tube;
-    Hft(i) = hf_tee;
+    % Friction coefficient array
+    fp(i) = f1_tee;
+    ft(i) = f1_tube;
     
     % Iterating the index
     i = i + 1;
-    
 end
 
 %% Strip arrays
@@ -126,31 +124,37 @@ end
 %% Plots of Velocity, Position (z), Reynold's number, hf with time, t
 figure(1); % opens a figure window
 % Vel vs Time
-subplot(3, 1, 1)
+subplot(4, 1, 1)
 plot(Tim(1:idx-1), Vel(1:idx-1), '-r')
 ylabel('Velocity, [m/s]');
 % Pos vs Time
-subplot(3, 1, 2)
+subplot(4, 1, 2)
 plot(Tim(1:idx-1), Pos(1:idx-1), '-b')
 ylabel('Position, [m]');
+% Rey vs Time
+subplot(4, 1, 3)
+plot(Tim(1:idx-1), Reyp(1:idx-1), '-g')
+ylabel('Pipe Reynolds');
+% Rey vs Time
+subplot(4, 1, 4)
+plot(Tim(1:idx-1), Reyt(1:idx-1), '-m')
+ylabel('Tee Reynolds');
 hold off
 
 figure(2)
-% Rey vs Time
-subplot(4, 1, 1)
-plot(Tim(1:idx-1), Reyp(1:idx-1), '-r')
-ylabel('Re Tube');
-% Rey vs Time
-subplot(4, 1, 2)
-plot(Tim(1:idx-1), Reyt(1:idx-1), '-b')
-ylabel('Re Tee');
-% Hf vs Time
-subplot(4, 1, 3)
-plot(Tim(1:idx-1), Hfp(1:idx-1), '-c')
-ylabel('hf Pipe');
+subplot(3, 1, 1)
+plot(Pos(1:idx), Vel(1:idx), '-r'); % plots velocity on y vs position on x
+ylabel('Velocity, [m/s]');
+xlabel('Position, [m]');
+title('Velocity vs Position'); % creates a title for the plot
+% Friction coefficient vs Time
+subplot(3, 1, 2)
+plot(Tim(1:idx-1), fp(1:idx-1), '-b')
+ylabel('Pipe f');
 xlabel('Time, [s]');
-% Hf vs Time
-subplot(4, 1, 4)
-plot(Tim(1:idx-1), Hft(1:idx-1), '-m')
-ylabel('hf Tee');
+% Friction coefficient vs Time
+subplot(3, 1, 3)
+plot(Tim(1:idx-1), ft(1:idx-1), '-m')
+ylabel('Tee f');
 xlabel('Time, [s]');
+hold off
