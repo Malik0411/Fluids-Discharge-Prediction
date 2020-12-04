@@ -35,13 +35,12 @@ Hft = zeros(1, 800); % hf for tee
 
 % For iterating through solution arrays
 i = 1;
-Vold = 1;
 
 %% Iterative solution
 while z >= 0
     % Initial guess
-    Vx0 = 10;
-    Vx1 = Vold;
+    Vx0 = 0.5;
+    Vx1 = 1;
     
     % Iterating to find Vx
     while abs(Vx0 - Vx1) > 0.001
@@ -96,7 +95,6 @@ while z >= 0
     t = t + tinc;
     
     % Velocity array
-    Vold = Vx1;
     Vel(i) = Vx1;
     
     % Reynold's array
