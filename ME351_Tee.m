@@ -7,7 +7,7 @@ t = 0;
 tinc = 1;
 
 % Length of the tube
-L_tube = 40/100;
+L_tube = 20/100;
 L_tee = 4/100;
 
 % Known Values
@@ -78,13 +78,12 @@ while z >= 0
         % Friction equations
         hf_tube = (L_tube*f_tube*Vx0^2)/(d_tube*2*g);
         hf_tee = (L_tee*f_tee*Vy^2)/(d_tee*g);
-        hm_entrance = K_tube*Vx^2/(2*g);
+        hm_entrance = K_tube*Vx0^2/(2*g);
         hm_tee = K_tee*Vy^2/g;
         
-        % Defining implicit equation for Vout = Uavg
+        % Defining implicit equation for Vx
         eqn = Vx == sqrt(301.110876*(z+L_tube/150+0.02-hf_tube-hf_tee-hm_entrance-hm_tee));
-        Vx1 = double(solve(eqn, Vx));
-        
+        Vx1 = solve(eqn, Vx, 'ReturnConditions', true).Vx;
     end
     
     % Position array
