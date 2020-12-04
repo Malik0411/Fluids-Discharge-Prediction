@@ -7,7 +7,7 @@ t = 0;
 tinc = 1;
 
 % Length of the tube
-L_tube = 20/100;
+L_tube = 40/100;
 L_tee = 4/100;
 
 % Known Values
@@ -35,12 +35,13 @@ Hft = zeros(1, 800); % hf for tee
 
 % For iterating through solution arrays
 i = 1;
+Vold = 1;
 
 %% Iterative solution
 while z >= 0
     % Initial guess
     Vx0 = 0.5;
-    Vx1 = 1;
+    Vx1 = Vold;
     
     % Iterating to find Vx
     while abs(Vx0 - Vx1) > 0.001
@@ -56,7 +57,7 @@ while z >= 0
         if Re_tube >= 4000
             eqn_tube = 1/sqrt(f) == -2*log(e/(d_tube*3.7)+2.51/(Re_tube*sqrt(f)));
         elseif Re_tube < 2300
-            eqn_tube = f == 64/Re;
+            eqn_tube = f == 64/Re_tube;
         else
             eqn_tube = f == 0.045;
         end
@@ -65,7 +66,7 @@ while z >= 0
         if Re_tee >= 4000
             eqn_tee = 1/sqrt(f) == -2*log(e/(d_tee*3.7)+2.51/(Re_tee*sqrt(f)));
         elseif Re_tee < 2300
-            eqn_tee = f == 64/Re;
+            eqn_tee = f == 64/Re_tee;
         else
             eqn_tee = f == 0.045;
         end
@@ -95,6 +96,7 @@ while z >= 0
     t = t + tinc;
     
     % Velocity array
+    Vold = Vx1;
     Vel(i) = Vx1;
     
     % Reynold's array
