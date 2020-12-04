@@ -46,7 +46,7 @@ while z >= 0
     f1_tee = 0.05;
     
     % Iterating to find f_tube and f_tee
-    while abs(f0_tube - f1_tube) > 0.001 || abs(f0_tee - f1_tee) > 0.001
+    while abs(f0_tube - f1_tube) > 0.0001 || abs(f0_tee - f1_tee) > 0.0001
         
         % Iterating our next friction coefficient
         f0_tube = f1_tube;
@@ -102,8 +102,8 @@ while z >= 0
     Reyt(i) = Re_tee;
     
     % Friction coefficient array
-    fp(i) = f1_tee;
-    ft(i) = f1_tube;
+    fp(i) = f1_tube;
+    ft(i) = f1_tee;
     
     % Iterating the index
     i = i + 1;
