@@ -2,17 +2,18 @@ syms Vout hf hm f
 
 %% Variables - All units in  standard SI
 % Starting level (maximum)
-z = 0.1;
+z = 0.08;
 t = 0;
 tinc = 1;
 
-% First pipe
-L = 0.3;
+% Length of the tube
+L = 0.2;
 
 % Known Values
 d = 7.94/1000;
 e = 0.0025/1000;
 g = 9.81;
+rho = 998.19;
 u = 0.001002;
 l = 32/100;
 w = 26/100;
@@ -31,7 +32,7 @@ Hf = zeros(1, 500); % hf
 i = 1;
 
 %% Iterative solution
-while z >= 0.02
+while z >= 0
     % Initial guess
     f0 = 0.1;
     f1 = 0.03;
@@ -41,14 +42,10 @@ while z >= 0.02
         % Current f to previous f
         f0 = f1;
 
-        % Solving for hf (no summation needed)
-        hf = (f0*L*Vout^2)/(2*d*g);
-        hm = (K*Vout^2)/(2*g);
-
         % Defining implicit equation for Vout = Uavg
-        eqn = Vout == sqrt(19.62*(z+L/150-hf-hm));
+        eqn = Vout == sqrt((2*g*z+(g*L)/75+0.04*g-(L*f0*Vout^2)/d-K*Vout^2)/(1-(A2/A1)^2));
         Uavg = double(solve(eqn, Vout));
-        Re = 998.19*Uavg*d/u;
+        Re = rho*Uavg*d/u;
 
         % Depending on the type of flow
         if Re >= 4000
