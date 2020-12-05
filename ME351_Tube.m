@@ -7,7 +7,7 @@ t = 0;
 tinc = 1;
 
 % Length of the tube
-L = 50/100;
+L = 10/100;
 
 % Known Values
 d = 7.94/1000;
