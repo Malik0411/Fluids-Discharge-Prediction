@@ -24,8 +24,8 @@ K_tee = 0.962772;
 A1 = l*w;
 A2 = pi*(d_tube/2)^2;
 
-% Arrays of solutions
-Vel = zeros(1, 800); % Velocity
+% Declaring the arrays for each plotted parameter
+Vel = zeros(1, 800); % Output Velocity (Vy)
 Tim = zeros(1, 800); % Time
 Pos = zeros(1, 800); % Position
 Reyp = zeros(1, 800); % Reynold's number pipe
@@ -36,34 +36,32 @@ ft = zeros(1, 800); % Friction coefficient for tee
 % For iterating through solution arrays
 i = 1;
 
-% Iterative solution
+%% Iterating through z from 0.08 -> 0
 while z >= 0
-    
-    % Initial guess
+    % Initial guess for converging friction factors
     f0_tube = 0.03;
     f1_tube = 0.05;
     f0_tee = 0.03;
     f1_tee = 0.05;
     
-    % Iterating to find f_tube and f_tee
+    % Iterating until either f converges based on recalculated Vin = Vx
     while abs(f0_tube - f1_tube) > 0.0001 || abs(f0_tee - f1_tee) > 0.0001
-        
         % Iterating our next friction coefficient
         f0_tube = f1_tube;
         f0_tee = f1_tee;
         
-        % Defining implicit equation for Vx
+        % Defining direct equation for Vx
         eqn = Vx == sqrt((z+L_tube/150+0.02)/(0.1422377+L_tube*f0_tube/(d_tube*2*g)+f0_tee*L_tee*0.25526276^2/(d_tee*g)));
         Vx0 = double(solve(eqn, Vx));
         
-        % compute Vy
+        % Computing Vy based on derived ratio
         Vy = 0.25526276*Vx0;
         
-        % Friction coefficients
+        % Calculating the Reynold's number for each tube
         Re_tube = rho*Vx0*d_tube/u;
         Re_tee = rho*Vy*d_tee/u;
         
-        % Depending on the type of flow for tube
+        % Piecewise assumption based on the calculated Reynold's number
         if Re_tube >= 4000
             eqn_tube = 1/sqrt(f) == -2*log(e/(d_tube*3.7)+2.51/(Re_tube*sqrt(f)));
         elseif Re_tube < 2300
@@ -72,7 +70,7 @@ while z >= 0
             eqn_tube = f == 0.045;
         end
         
-        % Depending on the type of flow for tee
+        % Piecewise assumption based on the calculated Reynold's number
         if Re_tee >= 4000
             eqn_tee = 1/sqrt(f) == -2*log(e/(d_tee*3.7)+2.51/(Re_tee*sqrt(f)));
         elseif Re_tee < 2300
@@ -81,7 +79,7 @@ while z >= 0
             eqn_tee = f == 0.045;
         end
         
-        % Solving for the new friction coefficients
+        % Calculating the new friction factor to compare against the previous one
         f1_tube = double(solve(eqn_tube, f));
         f1_tee = double(solve(eqn_tee, f));
     end
@@ -95,7 +93,7 @@ while z >= 0
     t = t + tinc;
     
     % Velocity array
-    Vel(i) = Vx0;
+    Vel(i) = Vy;
     
     % Reynold's array
     Reyp(i) = Re_tube;
@@ -109,7 +107,7 @@ while z >= 0
     i = i + 1;
 end
 
-%% Strip arrays
+%% Strip arrays of zeros
 % Finding where the zeroes in B start
 idx = 1;
 val = -1;
@@ -121,40 +119,41 @@ while val == -1
     end
 end
 
-%% Plots of Velocity, Position (z), Reynold's number, hf with time, t
+%% Plots of Velocity, Position (z), Reynold's number, f with time, t
 figure(1); % opens a figure window
 % Vel vs Time
-subplot(4, 1, 1)
-plot(Tim(1:idx-1), Vel(1:idx-1), '-r')
+plot(Tim(1:idx-1), Vel(1:idx-1), '-b'); % plots time on x vs output velocity on y
 ylabel('Velocity, [m/s]');
-% Pos vs Time
-subplot(4, 1, 2)
-plot(Tim(1:idx-1), Pos(1:idx-1), '-b')
-ylabel('Position, [m]');
-% Rey vs Time
-subplot(4, 1, 3)
-plot(Tim(1:idx-1), Reyp(1:idx-1), '-g')
-ylabel('Pipe Reynolds');
-% Rey vs Time
-subplot(4, 1, 4)
-plot(Tim(1:idx-1), Reyt(1:idx-1), '-m')
-ylabel('Tee Reynolds');
-hold off
+xlabel('Time, [s]');
+title('Output Velocity vs. Time'); % creates a title for the plot
 
-figure(2)
-subplot(3, 1, 1)
-plot(Pos(1:idx), Vel(1:idx), '-r'); % plots velocity on y vs position on x
+figure(2); % opens a figure window
+% Rey vs Time
+subplot(2, 1, 1);
+plot(Tim(1:idx-1), Reyp(1:idx-1), '-g'); % plots time on x vs reynold's number on y
+ylabel('Re');
+xlabel('Time, [s]');
+title("Tube Reynold's Number vs. Time");
+subplot(2, 1, 2);
+plot(Tim(1:idx-1), Reyt(1:idx-1), '-g'); % plots time on x vs reynold's number on y
+ylabel('Re');
+xlabel('Time, [s]');
+title("Tee Reynold's Number vs. Time");
+
+figure(3);
+plot(Pos(1:idx-1), Vel(1:idx-1), '-r'); % plots output velocity on y vs position on x
 ylabel('Velocity, [m/s]');
 xlabel('Position, [m]');
-title('Velocity vs Position'); % creates a title for the plot
-% Friction coefficient vs Time
-subplot(3, 1, 2)
-plot(Tim(1:idx-1), fp(1:idx-1), '-b')
-ylabel('Pipe f');
+title('Output Velocity vs. Position');
+
+figure(4);
+subplot(2, 1, 1);
+plot(Tim(1:idx-1), fp(1:idx-1), '-m'); % plots time on x vs friction factor on y
+ylabel('Friction Factor');
 xlabel('Time, [s]');
-% Friction coefficient vs Time
-subplot(3, 1, 3)
-plot(Tim(1:idx-1), ft(1:idx-1), '-m')
-ylabel('Tee f');
+title('Tube Friction Factor vs. Time');
+subplot(2, 1, 2)
+plot(Tim(1:idx-1), ft(1:idx-1), '-m'); % plots time on x vs friction factor on y
+ylabel('Friction Factor');
 xlabel('Time, [s]');
-hold off
+title("Tee Friction Factor vs. Time");
